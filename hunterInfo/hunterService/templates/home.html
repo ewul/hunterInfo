@@ -1,0 +1,346 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">  
+<html>  
+<head>  
+<title>HI</title>  
+<link rel="stylesheet" href="/static/easyui/themes/default/easyui.css" type="text/css" charset="utf-8"></link>
+<link rel="stylesheet" href="/static/easyui/themes/icon.css" type="text/css" charset="utf-8"></link>  
+<script type="text/javascript" src="/static/easyui/jquery.min.js"></script>  
+<script type="text/javascript" src="/static/easyui/jquery.easyui.min.js"></script>  
+<script type="text/JavaScript" src="/static/easyui/datagrid-detailview.js"></script>
+<script type="text/JavaScript" src="/static/easyui/editor-datebox.js"></script>
+</head>  
+<script type="text/javascript">
+Date.prototype.format = function (fmt) {
+    var o = {
+        "M+": this.getMonth() + 1, //月份 
+        "d+": this.getDate(), //日 
+        "h+": this.getHours(), //小时 
+        "m+": this.getMinutes(), //分 
+        "s+": this.getSeconds(), //秒 
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+        "S": this.getMilliseconds() //毫秒 
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+    if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+}
+$(function(){
+	if({{newflag}}==1){
+		newrow();
+	}
+})
+</script>  
+<body>  
+<!--
+<div>
+	<a href="/" class="easyui-linkbutton" data-options="iconCls:'icon-search'">检索</a>
+	<a href="/duplicate" class="easyui-linkbutton" data-options="iconCls:'icon-filter'">重复确认</a>
+</div>
+-->
+
+    <div class="easyui-panel" title="信息查询"  
+        icon="icon-save" style="width: 100%; height: 800px;"  
+        collapsible="false" minimizable="false" maximizable="false" closable="false">  
+  
+        <div class="easyui-layout" fit="true"  >  
+            <div  id="easyui_toolbar" region="north" border="false"  
+                style="border-bottom: 1px solid #ddd; height: 32px; padding: 2px 5px; background: #fafafa;">  
+                <div style="float: left;">  
+                    <a href="#" id="newResume" class="easyui-linkbutton" plain="true" icon="icon-add" onclick="window.location='http://localhost?new=1'">新增</a>  
+                </div>  
+  
+                <div class="datagrid-btn-separator"></div>  
+  				
+                <div id="tb" style="float: left;">  
+                    <input id="ss" class="easyui-searchbox"  
+                        searcher="doSearch" prompt="请输入关键字"  
+                        style="width: 550px; vertical-align: middle;"></input>   
+                </div>  
+  
+            </div>
+            <div region="center" border="false" style="float: north;">  
+                <table id="tt" ></table>  
+            </div>
+		</div>  
+    </div>  
+    <script>
+		mainData=new Array();
+        $('#tt').datagrid({  
+            title:'检索',  
+            iconCls:'icon-ok',  
+            width:'99%',
+			height: '100%',
+            pageSize:10,  
+            pageList:[5,10,15,20],  
+            nowrap:false,  
+            striped:true,  
+            collapsible:true,  
+            toolbar:"#easyui_toolbar",  
+            loadMsg:'数据加载中......',  
+            fitColumns:true,//允许表格自动缩放,以适应父容器
+            remoteSort:false,  
+            columns : [ [ {  
+                field : 'name',  
+                width : '8%',  
+                title : '姓名',
+				sortable : "true"
+            }, {  
+                field : 'company',  
+                width : '20%',  
+                title : '公司',
+				sortable : "true"
+            }, {  
+                field : 'location',  
+                width : '10%',  
+                title : '地点',
+				sortable : "true"
+            }, {  
+                field : 'position',  
+                width : '10%',  
+                title : '职位'
+            }, {  
+                field : 'telnos',  
+                width : '20%', 
+                title : '电话'
+            }, {
+                field : 'updatedate',  
+                width : '10%',
+                title : '更新日'  ,
+				sortable : "true"
+            }, {
+				hidden : true,
+				field : 'uid',
+                title : 'uid'
+			}
+			] ],  
+            pagination : false,  
+            rownumbers : true,
+			view: detailview,
+			singleSelect: true,
+			detailFormatter:function(index,row){
+				return '\
+						<div class="ddv_toolbar" region="north" border="false"  \
+							style="border-bottom: 1px solid #ddd; height: 32px; padding: 2px 5px; background: #fafafa;">  \
+							<div class="ddv_normal">\
+								<div style="float: left;">\
+									<a href="#" class="easyui-linkbutton editResume" plain="true" icon="icon-edit" onclick="editrow(this)">编辑</a>\
+								</div>\
+								<div class="datagrid-btn-separator"></div>\
+								<div style="float: left;">\
+									<a href="#" class="easyui-linkbutton removeResume" plain="true" icon="icon-remove" onclick="deleterow(this)">删除</a>\
+								</div>\
+							</div>\
+							<div class="ddv_inedit">\
+								<div style="float: left;">\
+									<a href="#" class="easyui-linkbutton saveResume" plain="true" icon="icon-remove" onclick="saverow(this)">保存</a>\
+								</div>\
+								<div class="datagrid-btn-separator"></div>\
+								<div style="float: left;">\
+									<a href="#" class="easyui-linkbutton cancelResume" plain="true" icon="icon-remove" onclick="cancelrow(this)">取消</a>\
+								</div>\
+							</div>\
+						</div>\
+						<div class="ddv">\
+							<table class="t1" style="padding:5px 0"></table>\
+							<table class="t2" style="padding:5px 0"></table>\
+						</div>\
+						';
+			},
+			onExpandRow: function(index,row){
+				var ddv = $(this).datagrid('getRowDetail',index).find('div.ddv');
+				ddv.panel({
+					border:false,
+					cls: 'easyui-layout',
+					toolbar:"#ddv_toolbar",  
+					cache:false,
+					onOpen:function(){
+						var t1 = $(this).find('table.t1');
+						$(this).parent().parent().find('div.ddv_normal').show();
+						$(this).parent().parent().find('div.ddv_inedit').hide();
+						t1.datagrid({
+							nowrap:false,  
+							columns : [ [ {  
+								field : 'name',  
+								width : '20%',  
+								title : '姓名',
+								editor: {
+									type: 'text',
+									options:{
+										required: true
+									}
+								}
+							}, {  
+								field : 'company',  
+								width : '20%',  
+								title : '公司',
+								editor: {
+									type: 'text',
+									options:{
+										required: true
+									}
+								}
+							}, {  
+								field : 'location',  
+								width : '10%',  
+								title : '地点',
+								editor: 'text'
+							}, {  
+								field : 'position',  
+								width : '10%',  
+								title : '职位',
+								editor: 'text'
+							}, {  
+								field : 'telnos',  
+								width : '40%', 
+								title : '电话',
+								editor: {
+									type: 'text',
+									options:{
+										required: true
+									}
+								}
+							}]]
+						});
+						rowData = new Array();
+						rowData.push(mainData[index]);
+						t1.datagrid('loadData', rowData);
+						var t2 = $(this).find('table.t2');
+						t2.datagrid({
+							nowrap:false,  
+							columns : [[{  
+								field : 'comments',  
+								width : '50%',  
+								title : '备注',
+								editor:{
+									type: 'textbox',
+									options:{
+										multiline: true,
+										height: 66
+									}
+								}
+							}, {
+								field : 'email',
+								width : '30%',
+								title : '电子邮件',
+								editor: 'text'
+							}, {
+								field : 'updatedate',  
+								width : '20%',
+								title : '更新日',
+								editor: 'datebox'
+							}]]
+						});
+						rowData = new Array();
+						rowData.push(mainData[index]);
+						t2.datagrid('loadData', rowData);
+						$('#tt').datagrid('fixDetailRowHeight',index);
+					}
+				});
+			}
+        });
+		$.ajax({
+			method: 'GET',
+			url: '{% url 'search' %}',
+			async:false,
+			success: function(data){
+				mainData = data;
+				$('#tt').datagrid('loadData', data);
+			}
+		});
+		
+		function doSearch(value,name){
+			$.ajax({
+				method: 'GET',
+				url: '{% url 'search' %}?query='+value,
+				async:false,
+				success: function(data){
+					mainData = data;
+					$('#tt').datagrid('loadData', data);
+				}
+			});
+		}
+
+		function getRowIndex(target){
+			var tr = $(target).closest('tr').prev();
+			return parseInt(tr.attr('datagrid-row-index'));
+		}
+		function editrow(target){
+			index = getRowIndex(target);
+			$(target).closest('.ddv_toolbar').find('div.ddv_normal').hide();
+			$(target).closest('.ddv_toolbar').find('div.ddv_inedit').show();
+			$(target).closest('tr').find('table.t1').datagrid('beginEdit',0);
+			$(target).closest('tr').find('table.t2').datagrid('beginEdit',0);
+			$('#tt').datagrid('fixDetailRowHeight',index);
+		}
+		function deleterow(target){
+			index = getRowIndex(target);
+			$.messager.confirm('Confirm','Are you sure?',function(r){
+				if (r){
+					rowData = $('#tt').datagrid('getRows')[index];
+					if (rowData['uid']){
+						$.ajax({
+							method: 'POST',
+							data: {form: rowData},
+							url: '{% url 'delete' %}',
+							async:false
+						});
+					}
+					$('#tt').datagrid('deleteRow', index);
+				}
+			});
+		}
+		function saverow(target){
+			index = getRowIndex(target);
+			$(target).closest('tr').find('table.t1').datagrid('endEdit',0);
+			$(target).closest('tr').find('table.t2').datagrid('endEdit',0);
+			$('#tt').datagrid('collapseRow', index);
+			$('#tt').datagrid('refreshRow', index);
+			//$(target).closest('.ddv_toolbar').find('div.ddv_normal').show();
+			//$(target).closest('.ddv_toolbar').find('div.ddv_inedit').hide();
+			$('#tt').datagrid('fixDetailRowHeight',index);
+			$.ajax({
+				method: 'POST',
+				data: {form: $('#tt').datagrid('getRows')[index]},
+				url: '{% url 'edit' %}',
+				async:false,
+				success: function(res){
+					if (res.method=='new'){
+						$('#tt').datagrid('getRows')[index]['uid']=res.uid;
+						$('#tt').datagrid('refreshRow', index);
+					}
+				}
+			});
+		}
+		function cancelrow(target){
+			index = getRowIndex(target);
+			$(target).closest('.ddv_toolbar').find('div.ddv_normal').show();
+			$(target).closest('.ddv_toolbar').find('div.ddv_inedit').hide();
+			$(target).closest('tr').find('table.t1').datagrid('cancelEdit',0);
+			$(target).closest('tr').find('table.t2').datagrid('cancelEdit',0);
+			$('#tt').datagrid('fixDetailRowHeight',index);
+		}
+		function newrow(){
+			$('#tt').datagrid('insertRow',{
+				index: 0,
+				row: {
+					name: '',
+					company: '',
+					location: '',
+					position: '',
+					telnos: '',
+					email: '',
+					updatedate: new Date().format("M/d/yyyy"),
+					uid: ''
+				}
+			});
+			$('#tt').datagrid('expandRow', 0);
+			$('#tt').datagrid('getRowDetail', 0).find('div.ddv_normal').hide();
+			$('#tt').datagrid('getRowDetail', 0).find('div.ddv_inedit').show();
+			$('#tt').datagrid('getRowDetail', 0).find('table.t1').datagrid('beginEdit',0);
+			$('#tt').datagrid('getRowDetail', 0).find('table.t2').datagrid('beginEdit',0);
+			$('#tt').datagrid('fixDetailRowHeight',0);
+		}
+    </script>  
+</body>  
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">  
+<html>  
+<head>  
+<title>猎户</title>  
+<link rel="stylesheet" href="/static/easyui/themes/default/easyui.css" type="text/css" charset="utf-8"></link>
+<link rel="stylesheet" href="/static/easyui/themes/icon.css" type="text/css" charset="utf-8"></link>  
+<script type="text/javascript" src="/static/easyui/jquery.min.js"></script>  
+<script type="text/javascript" src="/static/easyui/jquery.easyui.min.js"></script>
+<script type="text/JavaScript" src="/static/easyui/datagrid-detailview.js"></script>
+</head>  
+<script type="text/javascript">  
+    function doSearch(value,name){ //用户输入用户名,点击搜素,触发此函数
+		$.ajax({
+			method: 'GET',
+			url: '{% url 'search' %}?query='+value,
+			async:false,
+			success: function(data){
+				$('#tt').datagrid('loadData', data);
+			}
+		});
+    }  
+      
+</script>  
+<body>  
+<div>
+	<a href="/" class="easyui-linkbutton" data-options="iconCls:'icon-search'">检索</a>
+	<a href="/duplicate" class="easyui-linkbutton" data-options="iconCls:'icon-filter'">重复确认</a>
+</div>
+
+    <div class="easyui-panel" title="重复确认"  
+        icon="icon-save" style="width: 100%; height: 800px;"  
+        collapsible="false" minimizable="false" maximizable="false" closable="false">  
+  
+        <div class="easyui-layout" fit="true"  >  
+            <div  id="easyui_toolbar" region="north" border="false"  
+                style="border-bottom: 1px solid #ddd; height: 32px; padding: 2px 5px; background: #fafafa;">  
+                <div style="float: left;">  
+                    <a href="#" id="newResume" class="easyui-linkbutton" plain="true" icon="icon-add">新增</a>  
+                </div>  
+  
+                <div class="datagrid-btn-separator"></div>  
+  
+                <div style="float: left;">  
+                    <a href="#" id="editResume" class="easyui-linkbutton" plain="true" icon="icon-edit">编辑</a>  
+                </div>  
+  
+                <div class="datagrid-btn-separator"></div>  
+  
+                <div style="float: left;">  
+                    <a href="#" class="easyui-linkbutton" plain="true"  
+                        icon="icon-remove">删除</a>  
+                </div>  
+  
+				<div class="datagrid-btn-separator"></div>  
+				
+                <div id="tb" style="float: left;">  
+                    <input id="ss" class="easyui-searchbox"  
+                        searcher="doSearch" prompt="请输入关键字"  
+                        style="width: 550px; vertical-align: middle;"></input>   
+                </div>  
+  
+            </div>
+            <div region="center" border="false" style="float: north;">  
+                <table id="tt" ></table>  
+            </div>
+		</div>  
+    </div>  
+    <script>  
+        $('#tt').datagrid({  
+            title:'检索',  
+            iconCls:'icon-ok',  
+            width:'99%',
+			height: '100%',
+            pageSize:10,  
+            pageList:[5,10,15,20],  
+            nowrap:false,  
+            striped:true,  
+            collapsible:true,
+			view: detailview,
+            toolbar:"#easyui_toolbar",  
+            loadMsg:'数据加载中......',  
+            fitColumns:true,//允许表格自动缩放,以适应父容器
+            remoteSort:false,  
+            columns : [ [ {  
+                field : 'name',  
+                width : '8%',  
+                title : '姓名',
+				sortable : "true"
+            }, {  
+                field : 'company',  
+                width : '20%',  
+                title : '公司',
+				sortable : "true"
+            }, {  
+                field : 'location',  
+                width : '10%',  
+                title : '地点',
+				sortable : "true"
+            }, {  
+                field : 'position',  
+                width : '10%',  
+                title : '职位'
+            }, {  
+                field : 'telnos',  
+                width : '20%', 
+                title : '电话'
+            }, {
+                field : 'updatedate',  
+                width : '10%',
+                title : '更新日'  ,
+				sortable : "true"
+            }, {
+				hidden : true,
+				field : 'uid',
+                title : 'uid'
+			}
+			] ],  
+            pagination : false,  
+            rownumbers : true,
+			singleSelect: true,
+			detailFormatter:function(index,row){
+				return '<div class="ddv" style="padding:5px 0">abc</div>';
+			},
+			onExpandRow: function(index,row){
+				var ddv = $(this).datagrid('getRowDetail',index).find('div.ddv');
+				ddv.panel({
+					border:false,
+					cache:false,
+					href:'{% url 'duplicateExpand' %}?uid='+row.uid,
+					onLoad:function(){
+						$('#tt').datagrid('fixDetailRowHeight',index);
+					}
+				});
+				$('#tt').datagrid('fixDetailRowHeight',index);
+			}
+        });
+		$.ajax({
+			method: 'GET',
+			url: '{% url 'search' %}',
+			async:false,
+			success: function(data){
+				$('#tt').datagrid('loadData', data);
+			}
+		});
+    </script>  
+</body>  
+</html>
